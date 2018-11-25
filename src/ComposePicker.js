@@ -84,7 +84,7 @@ export default class ComposePicker extends Component {
       }
     }
     else {
-      alert('please select correct date');
+      alert(this.props.alertText || 'please select correct date');
     }
     
   }
