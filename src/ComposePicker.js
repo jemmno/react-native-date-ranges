@@ -1,166 +1,227 @@
 import React, { Component } from 'react';
-import { View, TouchableHighlight, Modal, Text } from 'react-native';
-import DateRange from './DateRange';
-import moment from 'moment'; 
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Picker,
+} from 'react-native';
+import PropTypes from 'prop-types';
+import moment from 'moment';
 import normalize from './normalizeText';
+import Month from './Month';
 
 const styles = {
-  placeholderText: {
-    color: '#c9c9c9',
-    fontSize: normalize(18),
+  calendar: {
+    backgroundColor: 'rgb(255, 255, 255)',
+    marginHorizontal: normalize(10),
   },
-  contentInput: {
+  headActionContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+  },
+  headCoverContainer: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    height: normalize(120),
+    width: '100%',
     justifyContent: 'center',
+    backgroundColor: '#F5A623',
+    paddingHorizontal: 20,
   },
-  contentText: {
-    fontSize: normalize(18),
+  dateContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
-  stylish : {
-    height: 48,
-    borderColor: '#bdbdbd',
-    borderWidth: 2,
-    borderRadius: 32,
-  }
+  headTitleText: {
+    fontSize: normalize(20),
+    color: 'white',
+    fontWeight: 'bold'
+  },
+};
 
-}
-export default class ComposePicker extends Component {
-  constructor(props){
+const min = 1900;
+const max = 2100;
+const interval = (max - min) + 1;
+const rangeArray = Array.from(new Array(interval), (val, index) => index + min);
+
+export default class DateRange extends Component {
+  constructor(props) {
     super(props);
-    this.state={
-      modalVisible:false,
-      allowPointerEvents:true,
-      showContent:false,
-      selected: '',
-      startDate: null,
-      endDate: null,
-      date: new Date(),
-      focus:'startDate',
-      currentDate: moment(),
+    const defalutFormat = (!props.mode || props.mode === 'single') ? 'ddd, MMM D' : 'MMM DD,YYYY';
+    this.state = {
+      focusedMonth: moment().startOf('month'),
+      currentDate: props.currentDate || moment(),
+      startDate: props.startDate || '',
+      endDate: props.endDate || '',
+      focus: props.focusedInput || 'startDate',
+      clearStart: '',
+      clearEnd: '',
+      clearSingle: props.currentDate.format(defalutFormat) || '',
+      selectState: 'monthAndDate', // or year
+      selectedYear: null,
     }
   }
-  isDateBlocked = ( date ) => {
-    if ( this.props.blockBefore ){
-      return date.isBefore(moment(), 'day');
-    }else if(this.props.blockAfter){
-      return date.isAfter(moment(), 'day');
-    }
-    return false;
-  }
+  previousMonth = () => {
+    this.setState({
+      focusedMonth: this.state.focusedMonth.add(-1, 'M')
+    });
+  };
+  nextMonth = () => {
+    this.setState({
+      focusedMonth: this.state.focusedMonth.add(1, 'M')
+    });
+  };
   onDatesChange = (event) => {
-    const { startDate, endDate ,focusedInput, currentDate } = event;
+    this.props.onDatesChange(event);
+    const defalutFormat = (!this.props.mode || this.props.mode === 'single') ? 'ddd, MMM D' : 'MMM DD,YYYY';
+    const headFormat = this.props.headFormat || defalutFormat;
+    const { startDate, endDate, focusedInput, currentDate } = event;
     if (currentDate) {
-      this.setState({currentDate});
+      this.setState({ currentDate });
+      this.setState({ clearSingle: currentDate.format(headFormat) });
       return;
     }
     this.setState({ ...this.state, focus: focusedInput }, () => {
       this.setState({ ...this.state, startDate, endDate })
+      if (endDate) {
+        this.setState({ clearStart: startDate.format(headFormat), clearEnd: endDate.format(headFormat) })
+      }
+      else {
+        this.setState({ clearStart: startDate.format(headFormat), clearEnd: '' });
+      }
     }
     );
   }
-  setModalVisible = (visible) => {
-    this.setState({ modalVisible: visible });
+  selectYear = () => {
+    this.setState({
+      selectState: 'year',
+      selectedYear: parseInt(this.state.focusedMonth.format('YYYY')),
+    })
   }
-  onConfirm = () => {
-    const returnFormat = this.props.returnFormat || 'YYYY/MM/DD';
-    const outFormat = this.props.outFormat || 'LL';
-    if (!this.props.mode || this.props.mode === 'single') {
-      this.setState({showContent:true, selected: this.state.currentDate.format(outFormat)});
-      this.setModalVisible(false);
-      if(typeof this.props.onConfirm === 'function'){
-        this.props.onConfirm({currentDate:this.state.currentDate.format(returnFormat)});
-      }
-      return;
-    } 
-    
-    if (this.state.startDate && this.state.endDate) {
-      const start = this.state.startDate.format(outFormat);
-      const end = this.state.endDate.format(outFormat);
-      this.setState({showContent:true, selected:`${start} → ${end}`});
-      this.setModalVisible(false);
+  selectMonthAndDate = () => {
+    this.setState({
+      selectState: 'monthAndDate',
+    })
+  }
+  changeYear = (itemValue) => {
+    this.setState({ selectedYear: itemValue });
+    this.setState({
+      focusedMonth: this.state.focusedMonth.year(itemValue),
+      currentDate: this.state.currentDate.year(itemValue),
+    });
+    const defalutFormat = (!this.props.mode || this.props.mode === 'single') ? 'ddd, MMM D' : 'MMM DD,YYYY';
+    const headFormat = this.props.headFormat || defalutFormat;
+    this.setState({ clearSingle: this.state.currentDate.format(headFormat) });
 
-      if (typeof this.props.onConfirm === 'function') {
-        this.props.onConfirm({startDate:this.state.startDate.format(returnFormat), endDate:this.state.endDate.format(returnFormat)});
-      }
-    }
-    else {
-      alert(this.props.alertText || 'please select correct date');
-    }
-    
   }
-  getTitleElement() {
-    const { placeholder, customStyles = {}, allowFontScaling} = this.props;
-    const showContent = this.state.showContent;
-    if (!showContent && placeholder) {
-      return (
-        <Text allowFontScaling={allowFontScaling} style={[styles.placeholderText,customStyles.placeholderText]}>
-          {placeholder}
-        </Text>
-      );
-    }
-    return (
-      <Text allowFontScaling={allowFontScaling} style={[styles.contentText,customStyles.contentText]}>
-        {this.state.selected}
-      </Text>
-    );
-  }
-  render(){
+  render() {
+
+    const markText = this.props.markText || "選擇日期";
     const {
       customStyles = {},
     } = this.props;
-    
-    let style = styles.stylish;
-    style = this.props.centerAlign ? { ...style } : style;
-    style = { ...style, ...this.props.style };
-    
-    
-    return(
-      <TouchableHighlight 
-        underlayColor={'transparent'}
-        onPress={()=>{this.setModalVisible(true);}}
-        style={[{ width:'100%', height:'100%', justifyContent: 'center' },style]}>
-        <View>
-        <View><View style={[customStyles.contentInput,styles.contentInput]}>{this.getTitleElement()}</View></View>
-        <Modal 
-          animationType="slide"
-          transparent={false}
-          visible={this.state.modalVisible}>
-          <View stlye={{flex:1, flexDirection:'column'}}>
-            <View style={{height:'90%'}}>
-            <DateRange
-              headFormat={this.props.headFormat}
-              customStyles={customStyles}
-              markText={this.props.markText}
-              onDatesChange={this.onDatesChange}
-              isDateBlocked={this.isDateBlocked}
-              startDate={this.state.startDate}
-              endDate={this.state.endDate}
-              focusedInput={this.state.focus}
-              selectedBgColor={this.props.selectedBgColor || undefined}
-              selectedTextColor={this.props.selectedTextColor || undefined}
-              mode={this.props.mode || 'single'}
-              currentDate = {this.state.currentDate}
-            />
+
+    const headerContainer = {
+      ...styles.headCoverContainer,
+      ...customStyles.headerStyle,
+    }
+    const markTitle = {
+      ...styles.headTitleText,
+      color: 'black',
+      opacity: 0.8,
+      marginBottom: 15,
+      fontSize: normalize(18),
+      ...customStyles.headerMarkTitle,
+    };
+    const headerDate = {
+      ...styles.headTitleText,
+      ...customStyles.headerDateTitle,
+    }
+    return (
+      <View>
+        <View style={headerContainer}>
+          {this.props.mode === 'single' &&
+            <View>
+              <TouchableOpacity onPress={this.selectYear}>
+                <Text style={markTitle}>{this.state.focusedMonth.format('YYYY')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={this.selectMonthAndDate}>
+                <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold' }}>{this.state.clearSingle}</Text>
+              </TouchableOpacity>
             </View>
-            <View style={{ paddingBottom: '5%',
-              width:'100%', height: '10%',flexDirection:'row',justifyContent: 'center', alignItems: 'center'}}>
-                {this.props.customButton
-                  ?
-                  this.props.customButton
-                  :          
-                  <TouchableHighlight
-                  underlayColor={'transparent'}
-                  onPress={this.onConfirm}
-                  style={[{ width: '80%', marginHorizontal: '3%' }, this.props.ButtonStyle]}
-                  >
-                  <Text style={[{ fontSize:20 }, this.props.ButtonTextStyle]}>{this.props.ButtonText? this.props.ButtonText: "送出"}</Text>
-                  </TouchableHighlight>
-                }
+          }
+          {this.props.mode === 'range' &&
+            <View>
+              <Text style={markTitle}>{markText}</Text>
+              <View style={styles.dateContainer}>
+                <Text style={headerDate}>{this.state.clearStart ? this.state.clearStart : 'От'}</Text>
+                <Text style={styles.headTitleText}>→</Text>
+                <Text style={headerDate}>{this.state.clearEnd ? this.state.clearEnd : 'До'}</Text>
+              </View>
             </View>
-          </View>
-        </Modal>
+          }
         </View>
-      </TouchableHighlight>
-    )
+        {this.state.selectState === 'monthAndDate' &&
+          <View style={styles.calendar}>
+            <View style={styles.headActionContainer}>
+              <TouchableOpacity onPress={this.previousMonth}>
+                <Text style={{ paddingHorizontal: 15, fontSize: 18, fontWeight: 'bold' }}>{'<'}</Text>
+              </TouchableOpacity>
+              <Text style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>{this.state.focusedMonth.format('MMMM YYYY')}</Text>
+              <TouchableOpacity onPress={this.nextMonth}>
+                <Text style={{ paddingHorizontal: 15, fontSize: 18, fontWeight: 'bold' }}>{'>'}</Text>
+              </TouchableOpacity>
+            </View>
+            <Month
+              mode={this.props.mode}
+              date={this.props.date}
+              startDate={this.props.startDate}
+              endDate={this.props.endDate}
+              focusedInput={this.props.focusedInput}
+              currentDate={this.state.currentDate}
+              focusedMonth={this.state.focusedMonth}
+              onDatesChange={this.onDatesChange}
+              isDateBlocked={this.props.isDateBlocked}
+              onDisableClicked={this.props.onDisableClicked}
+              selectedBgColor={this.props.selectedBgColor}
+              selectedTextColor={this.props.selectedTextColor}
+            />
+          </View>
+        }
+        {this.state.selectState === 'year' &&
+          <View style={[styles.calendar, { height: '75%', justifyContent: 'center', }]}>
+            <Picker
+              selectedValue={this.state.selectedYear}
+              onValueChange={this.changeYear}
+            >
+              {rangeArray.map((value, index) => {
+                return (<Picker.Item key={index} label={String(value)} value={value} />)
+              })}
+            </Picker>
+          </View>
+        }
+      </View>
+
+    );
   }
 }
+
+
+DateRange.propTypes = {
+  mode: PropTypes.oneOf(['range', 'single']),
+  date: PropTypes.instanceOf(moment),
+  startDate: PropTypes.instanceOf(moment),
+  endDate: PropTypes.instanceOf(moment),
+  focusedInput: PropTypes.oneOf(['startDate', 'endDate']),
+  onDatesChange: PropTypes.func,
+  isDateBlocked: PropTypes.func,
+  onDisableClicked: PropTypes.func
+}
+
+
+
