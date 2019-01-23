@@ -17,7 +17,7 @@ const styles = {
   },
   headActionContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems:'center',
     justifyContent: 'space-between',
     paddingTop: 10,
     paddingBottom: 10,
@@ -25,32 +25,32 @@ const styles = {
     paddingRight: 10,
   },
   headCoverContainer: {
-    paddingTop: 20,
-    paddingBottom: 20,
+    paddingTop:20,
+    paddingBottom:20,
     height: normalize(120),
     width: '100%',
     justifyContent: 'center',
-    backgroundColor: '#F5A623',
+    backgroundColor : '#F5A623',
     paddingHorizontal: 20,
   },
-  dateContainer: {
+  dateContainer : {
     flexDirection: 'row',
     justifyContent: 'space-between'
   },
-  headTitleText: {
-    fontSize: normalize(20),
-    color: 'white',
-    fontWeight: 'bold'
+  headTitleText : { 
+    fontSize: normalize(20), 
+    color: 'white', 
+    fontWeight: 'bold' 
   },
 };
 
 const min = 1900;
 const max = 2100;
 const interval = (max - min) + 1;
-const rangeArray = Array.from(new Array(interval), (val, index) => index + min);
+const rangeArray = Array.from(new Array(interval),(val,index)=>index+min);
 
 export default class DateRange extends Component {
-  constructor(props) {
+  constructor(props){
     super(props);
     const defalutFormat = (!props.mode || props.mode === 'single') ? 'ddd, MMM D' : 'MMM DD,YYYY';
     this.state = {
@@ -60,19 +60,19 @@ export default class DateRange extends Component {
       endDate: props.endDate || '',
       focus: props.focusedInput || 'startDate',
       clearStart: '',
-      clearEnd: '',
+      clearEnd:'',
       clearSingle: props.currentDate.format(defalutFormat) || '',
       selectState: 'monthAndDate', // or year
       selectedYear: null,
     }
   }
   previousMonth = () => {
-    this.setState({
+    this.setState({ 
       focusedMonth: this.state.focusedMonth.add(-1, 'M')
     });
   };
   nextMonth = () => {
-    this.setState({
+    this.setState({ 
       focusedMonth: this.state.focusedMonth.add(1, 'M')
     });
   };
@@ -80,60 +80,60 @@ export default class DateRange extends Component {
     this.props.onDatesChange(event);
     const defalutFormat = (!this.props.mode || this.props.mode === 'single') ? 'ddd, MMM D' : 'MMM DD,YYYY';
     const headFormat = this.props.headFormat || defalutFormat;
-    const { startDate, endDate, focusedInput, currentDate } = event;
+    const { startDate, endDate ,focusedInput, currentDate } = event;
     if (currentDate) {
-      this.setState({ currentDate });
-      this.setState({ clearSingle: currentDate.format(headFormat) });
+      this.setState({currentDate});
+      this.setState({clearSingle:currentDate.format(headFormat)});
       return;
     }
     this.setState({ ...this.state, focus: focusedInput }, () => {
       this.setState({ ...this.state, startDate, endDate })
-      if (endDate) {
-        this.setState({ clearStart: startDate.format(headFormat), clearEnd: endDate.format(headFormat) })
-      }
-      else {
-        this.setState({ clearStart: startDate.format(headFormat), clearEnd: '' });
-      }
+        if(endDate){
+          this.setState({clearStart:startDate.format(headFormat), clearEnd:endDate.format(headFormat)})
+        }
+        else{
+          this.setState({clearStart:startDate.format(headFormat), clearEnd:''});
+        }
     }
     );
   }
   selectYear = () => {
     this.setState({
-      selectState: 'year',
-      selectedYear: parseInt(this.state.focusedMonth.format('YYYY')),
+      selectState : 'year',
+      selectedYear : parseInt(this.state.focusedMonth.format('YYYY')),
     })
   }
   selectMonthAndDate = () => {
     this.setState({
-      selectState: 'monthAndDate',
+      selectState : 'monthAndDate',
     })
   }
   changeYear = (itemValue) => {
-    this.setState({ selectedYear: itemValue });
-    this.setState({
+    this.setState({selectedYear: itemValue});
+    this.setState({ 
       focusedMonth: this.state.focusedMonth.year(itemValue),
       currentDate: this.state.currentDate.year(itemValue),
     });
     const defalutFormat = (!this.props.mode || this.props.mode === 'single') ? 'ddd, MMM D' : 'MMM DD,YYYY';
     const headFormat = this.props.headFormat || defalutFormat;
-    this.setState({ clearSingle: this.state.currentDate.format(headFormat) });
-
+    this.setState({clearSingle:this.state.currentDate.format(headFormat)});
+      
   }
   render() {
-
+    
     const markText = this.props.markText || "選擇日期";
     const {
       customStyles = {},
     } = this.props;
-
+    
     const headerContainer = {
       ...styles.headCoverContainer,
       ...customStyles.headerStyle,
     }
     const markTitle = {
       ...styles.headTitleText,
-      color: 'black',
-      opacity: 0.8,
+      color:'black',
+      opacity: 0.8 ,
       marginBottom: 15,
       fontSize: normalize(18),
       ...customStyles.headerMarkTitle,
@@ -145,17 +145,17 @@ export default class DateRange extends Component {
     return (
       <View>
         <View style={headerContainer}>
-          {this.props.mode === 'single' &&
+          {this.props.mode === 'single' && 
             <View>
               <TouchableOpacity onPress={this.selectYear}>
                 <Text style={markTitle}>{this.state.focusedMonth.format('YYYY')}</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={this.selectMonthAndDate}>
-                <Text style={{ fontSize: 40, color: 'white', fontWeight: 'bold' }}>{this.state.clearSingle}</Text>
+                <Text style={{ fontSize: 40, color:'white', fontWeight:'bold' }}>{this.state.clearSingle}</Text>
               </TouchableOpacity>
             </View>
           }
-          {this.props.mode === 'range' &&
+          {this.props.mode === 'range' && 
             <View>
               <Text style={markTitle}>{markText}</Text>
               <View style={styles.dateContainer}>
@@ -170,11 +170,11 @@ export default class DateRange extends Component {
           <View style={styles.calendar}>
             <View style={styles.headActionContainer}>
               <TouchableOpacity onPress={this.previousMonth}>
-                <Text style={{ paddingHorizontal: 15, fontSize: 18, fontWeight: 'bold' }}>{'<'}</Text>
+                <Text style={{paddingHorizontal:15, fontSize:18, fontWeight:'bold'}}>{'<'}</Text>
               </TouchableOpacity>
-              <Text style={{ fontSize: 20, color: 'black', fontWeight: 'bold' }}>{this.state.focusedMonth.format('MMMM YYYY')}</Text>
+              <Text style={{fontSize:20, color:'black', fontWeight:'bold' }}>{this.state.focusedMonth.format('MMMM YYYY')}</Text>
               <TouchableOpacity onPress={this.nextMonth}>
-                <Text style={{ paddingHorizontal: 15, fontSize: 18, fontWeight: 'bold' }}>{'>'}</Text>
+                <Text style={{paddingHorizontal:15, fontSize:18, fontWeight:'bold'}}>{'>'}</Text>
               </TouchableOpacity>
             </View>
             <Month
@@ -193,20 +193,19 @@ export default class DateRange extends Component {
             />
           </View>
         }
-        {this.state.selectState === 'year' &&
-          <View style={[styles.calendar, { height: '75%', justifyContent: 'center', }]}>
+        {this.state.selectState === 'year' && 
+          <View style={[styles.calendar, { height:'75%', justifyContent:'center', }]}>
             <Picker
-              selectedValue={this.state.selectedYear}
-              onValueChange={this.changeYear}
-            >
-              {rangeArray.map((value, index) => {
-                return (<Picker.Item key={index} label={String(value)} value={value} />)
-              })}
+              selectedValue = { this.state.selectedYear }
+              onValueChange = { this.changeYear }
+              >
+              {rangeArray.map((value,index)=>{
+                return(<Picker.Item key={index} label={String(value)} value={value}/>)})}
             </Picker>
           </View>
         }
-      </View>
-
+        </View>
+        
     );
   }
 }
