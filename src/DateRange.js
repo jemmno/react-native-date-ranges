@@ -121,7 +121,7 @@ export default class DateRange extends Component {
   }
   render() {
     
-    const markText = this.props.markText || "選擇日期";
+    const markText = this.props.markText || "Seleccionar fecha";
     const {
       customStyles = {},
     } = this.props;
@@ -159,9 +159,9 @@ export default class DateRange extends Component {
             <View>
               <Text style={markTitle}>{markText}</Text>
               <View style={styles.dateContainer}>
-                <Text style={headerDate}>{this.state.clearStart ? this.state.clearStart : 'startDate'}</Text>
+                <Text style={headerDate}>{this.state.clearStart ? this.state.clearStart : 'fecha inicio'}</Text>
                 <Text style={styles.headTitleText}>→</Text>
-                <Text style={headerDate}>{this.state.clearEnd ? this.state.clearEnd : 'endDate'}</Text>
+                <Text style={headerDate}>{this.state.clearEnd ? this.state.clearEnd : 'fecha fin'}</Text>
               </View>
             </View>
           }

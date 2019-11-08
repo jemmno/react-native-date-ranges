@@ -89,7 +89,7 @@ export default class ComposePicker extends Component {
       }
     }
     else {
-      alert(this.props.alertText || 'please select correct date');
+      alert(this.props.alertText || 'por favor seleccione la fecha correcta');
     }
 
   }
@@ -169,7 +169,7 @@ export default class ComposePicker extends Component {
                     onPress={this.onConfirm}
                     style={[{ width: '80%', marginHorizontal: '3%' }, this.props.ButtonStyle]}
                   >
-                    <Text style={[{ fontSize: 20 }, this.props.ButtonTextStyle]}>{this.props.ButtonText ? this.props.ButtonText : "送出"}</Text>
+                    <Text style={[{ fontSize: 20 }, this.props.ButtonTextStyle]}>{this.props.ButtonText ? this.props.ButtonText : "Confirmar"}</Text>
                   </TouchableHighlight>
                 }
               </View>
